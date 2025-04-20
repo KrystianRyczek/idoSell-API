@@ -10,11 +10,13 @@ Aplicatin provide acces do order details. Aplication ednpoint's allow searching 
 
 
 ## 🌟 Work Load
-Creat DB, setup DB acces, setup server conf.        | 2h
-User routers development                            | 6h
-Order routers development                           | 6h
-Implementation of authorisation                     | 8h
-Pulling data sheduling                              | 4h
+| Task                                                |Time|
+|-----------------------------------------------------|----|
+| Creat DB, setup DB acces, setup server conf.        | 2h |
+| User routers development                            | 6h |
+| Order routers development                           | 6h |
+| Implementation of authorisation                     | 8h |
+| Pulling data sheduling                              | 4h |
 
 ## 🛠️ Technologies Used
 
@@ -36,7 +38,7 @@ Pulling data sheduling                              | 4h
    git clone https://github.com/KrystianRyczek/idoSell-API
 2. ** Navigate to the project directory:**
    ```bash
-   cd IDOMODS-Forma-Sint
+   cd idoSell-API
 3. ** Install dependencies:**
    ```bash
    npm install
