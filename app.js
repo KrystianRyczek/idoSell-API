@@ -1,53 +1,81 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
-import logger from "morgan";
-import dotenv from "dotenv";
+const express = require('express')
+const logger = require('morgan')
+const cors = require('cors')
+const schedule = require('node-schedule')
+const ordersRouter = require('./routes/api/orders')
+const newUsersRouter = require('./routes/api/newUsers')
+const usersRouter = require('./routes/api/users')
+const JWTStrategy = require('./config/jwt')
+const authMiddleware = require('./middlewares/jwt')
+const app = express()
 
-import schedule from "node-schedule"
-import {fetchOrderById, fetchOrders} from "./fetchApi/api.js"
+const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
 
-dotenv.config();
+const {fetchApiOrders} =require("./externalApi/api")
 
-const app = express();
+app.use(express.json())
+app.use(cors())
+app.use(logger(formatsLogger))
 
-app.use(express.json());
-app.use(cors());
-app.use(bodyParser.json());
+JWTStrategy()
+app.use('/api', newUsersRouter)
+app.use('/api', authMiddleware, usersRouter)
+app.use('/api/orders', authMiddleware ,ordersRouter)
 
 
-const formatsLogger = app.get("env") === "development" ? "dev" : "short";
-app.use(logger(formatsLogger));
+const dataBaseUpdate = async ()=>{
+    const date = Date()
+    const newDate = new Date(date)
+    const year = newDate.getFullYear().toString()
+    const month = ("0" + (newDate.getMonth() + 1)).slice(-2)
+    const prevDay = ("0" + (newDate.getDay() -1)).slice(-2)
+    const today = ("0" + newDate.getDay() ).slice(-2)
+    const startDate = `${year}-${month}-${prevDay} 23:59:00`
+    const endDate = `${year}-${month}-${today} 23:59:00`
+    await fetchApiOrders(startDate, endDate)
+  }
 
-// const job = schedule.scheduleJob('5 * * * * *', function(){
-//   fetchData()
-//   console.log('The answer to life, the universe, and everything!');
-// });
 
-//setInterval(()=>{fetchOrderById('it@zooart.com.pl-400')}, 5000)
-setInterval(()=>{fetchOrders('2024-12-24 23:59:59', '2025-01-01 23:59:59')}, 5000)
+schedule.scheduleJob('01 59 23 * * *', function(){
+  dataBaseUpdate()
+});
+
+
+// setInterval(async ()=>{
+//   const date = Date()
+//   const newDate = new Date(date)
+//   const year = newDate.getFullYear().toString()
+//   const month = ("0" + (newDate.getMonth() + 1)).slice(-2)
+//   const prevDay = ("0" + (newDate.getDay() -1)).slice(-2)
+//   const day = ("0" + newDate.getDay() ).slice(-2)
+//   const startDate = `2023-${month}-${prevDay} 23:59:59`
+//   const endDate = `${year}-${month}-${day} 23:59:59`
+//   await fetchApiOrders(startDate, endDate)
+// }, 1000)
+
  
-  
- 
-     
-  
- 
+
+
+
 
 app.use((req, res) => {
-  res.status(404).json({
-    message: `Not found - ${req.path}`,
-  });
-});
-
+  res.status(404).json({ message: `Not found - ${req.path}` })
+})
 app.use((err, req, res, next) => {
-  if (err.name === "ValidationError") {
-    return res.status(400).json({
-      message: err.message,
-    });
+  console.log(err.name)
+  if(err.name === 'ValidationError'){
+    return res.status(400).json({ message: err.message })
   }
-  res.status(500).json({
-    message: err.message || `Internal Server Error. Something broke!`,
-  });
-});
+  if(err.name === 'BodyData'){
+    return res.status(400).json({ message: err.message })
+  }
+  if(err.name === 'IncorrectCredentials'){
+    return res.status(401).json({ message: err.message })
+  }
+  if(err.name === 'OcupatedEmail'){
+    return res.status(409).json({ message: err.message })
+  }
+  res.status(500).json({ message: err.message })
+})
 
-export default app;
+module.exports = app
