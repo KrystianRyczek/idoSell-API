@@ -1,6 +1,10 @@
 const axios = require('axios')
 const { fetchAddOrder, fetchOrderByID } =require("../controllers/orders/ordersService")
 
+require('dotenv').config()
+const {API_KEY:apiKey}=process.env
+
+
 const addNeworder = async (newOrder)=>{
   try{
     const order = await fetchOrderByID({orderID: newOrder.orderID})
@@ -20,7 +24,7 @@ const addNeworder = async (newOrder)=>{
     }  
 }
 
-const apiKey = 'YXBwbGljYXRpb24xNjpYeHI1K0MrNVRaOXBaY2lEcnpiQzBETUZROUxrRzFFYXZuMkx2L0RHRXZRdXNkcmF5R0Y3ZnhDMW1nejlmVmZP';
+
 
 const fetchApiOrders =  async  (startDate, endDate) => {
     const options = {
