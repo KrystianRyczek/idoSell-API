@@ -7,11 +7,17 @@ const newUsersRouter = require('./routes/api/newUsers')
 const usersRouter = require('./routes/api/users')
 const JWTStrategy = require('./config/jwt')
 const authMiddleware = require('./middlewares/jwt')
+const date = require('./controllers/date/date')
+const { format, addDays } = require('date-fns');
+const {fetchApiOrders} =require("./externalApi/api")
+
+require('dotenv').config()
+
+const {PAST_DAYS:pastDays}=process.env
+
 const app = express()
 
 const formatsLogger = app.get('env') === 'development' ? 'dev' : 'short'
-
-const {fetchApiOrders} =require("./externalApi/api")
 
 app.use(express.json())
 app.use(cors())
@@ -23,39 +29,47 @@ app.use('/api', authMiddleware, usersRouter)
 app.use('/api/orders', authMiddleware ,ordersRouter)
 
 
+let lastUpdate
+
+const readingUpdateDate = async () => {
+  lastUpdate = await date.get()
+}
+
+const OrdersDbInit = async ()=>{
+  const now = new Date()
+  const curentDate = format(now, 'yyyy-MM-dd HH:mm:ss');
+  const pastDate = format(addDays(now, -pastDays), 'yyyy-MM-dd HH:mm:ss');
+  console.log("DB orders is init")
+  console.log("start date:", pastDate, "| end date:", curentDate);
+  await fetchApiOrders(pastDate, curentDate, true)
+}
+
+(async ()=>{
+  await readingUpdateDate()
+  !lastUpdate ? OrdersDbInit()
+                          : console.log("Last DB update: ", lastUpdate.date)
+  })()
+
+
 const dataBaseUpdate = async ()=>{
-    const date = Date()
-    const newDate = new Date(date)
-    const year = newDate.getFullYear().toString()
-    const month = ("0" + (newDate.getMonth() + 1)).slice(-2)
-    const prevDay = ("0" + (newDate.getDay() -1)).slice(-2)
-    const today = ("0" + newDate.getDay() ).slice(-2)
-    const startDate = `${year}-${month}-${prevDay} 23:59:00`
-    const endDate = `${year}-${month}-${today} 23:59:00`
-    await fetchApiOrders(startDate, endDate)
+  await readingUpdateDate()
+  const now = new Date()
+  const curentDate = format(now, 'yyyy-MM-dd HH:mm:ss');
+  console.log("DB orders is updating!")
+  console.log("start date:", lastUpdate.date, "| end date:", curentDate);
+  await fetchApiOrders(lastUpdate.date, curentDate)
   }
+  
+schedule.scheduleJob('0 12 14 * * *', function(){
 
-
-schedule.scheduleJob('01 59 23 * * *', function(){
   dataBaseUpdate()
+
 });
 
-
 // setInterval(async ()=>{
-//   const date = Date()
-//   const newDate = new Date(date)
-//   const year = newDate.getFullYear().toString()
-//   const month = ("0" + (newDate.getMonth() + 1)).slice(-2)
-//   const prevDay = ("0" + (newDate.getDay() -1)).slice(-2)
-//   const day = ("0" + newDate.getDay() ).slice(-2)
-//   const startDate = `2023-${month}-${prevDay} 23:59:59`
-//   const endDate = `${year}-${month}-${day} 23:59:59`
-//   await fetchApiOrders(startDate, endDate)
-// }, 1000)
-
- 
-
-
+//   console.log("run")
+//   fetchApiOrders('2025-01-30 12:08:42', '2025-05-31 13:04:00')
+// }, 20000)
 
 
 app.use((req, res) => {
