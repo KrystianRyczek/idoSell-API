@@ -12,15 +12,14 @@ const { fetchDate,
     }catch(error){
       console.log(error)
     }
-    
+
   }
 
   const create = async (newDate) => {
 
     const date = {date: newDate}   
     try{
-      const lastUpdateDate = await fetchNewDate(date)
-      console.log('lastUpdateDate', lastUpdateDate)
+      await fetchNewDate(date)
        
     }catch(error){
       console.log(error)
