@@ -20,7 +20,7 @@ const getOrders = async (req, res, next) => {
                               })
                         })
       const csv = new ObjectsToCsv(arrayData); 
-      //await csv.toDisk('./ordersList.csv')                 
+      //await csv.toDisk('./ordersList.csv')
       res.status(200).json(await csv.toString())
 
     }else{
@@ -95,7 +95,7 @@ const getOrderByWorth = async (req, res, next) => {
                                 })
                           })
         const csv = new ObjectsToCsv(arrayData); 
-        //await csv.toDisk('./ordersListByWorth.csv')                 
+        //await csv.toDisk('./ordersListByWorth.csv')
         res.status(200).json(await csv.toString())
       }else{
       next()
