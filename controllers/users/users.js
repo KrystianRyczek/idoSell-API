@@ -62,7 +62,7 @@ const signInUser = async (req, res, next)  => {
         )
 
         await fetchFindAndUpdate({email: user.email}, {token: token})
-        return res.status(201).json(token)
+        return res.status(200).json(token)
       }
     }
     throw new Error('Incorrect user credentials!')
