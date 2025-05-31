@@ -44,8 +44,10 @@ Aplicatin provide acces do order details. Aplication ednpoint's allow searching 
    npm install
 4. ** Creat .env fine and define varialbles:**
    ```bash
-        DB_HOST=
-        SECRET=
+   DB_HOST=
+   SECRET=
+   API_KEY=
+   PAST_DAYS=
 5. ** Run the project locally:**
    ```bash
    npm start
