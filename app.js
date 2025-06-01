@@ -47,7 +47,7 @@ const OrdersDbInit = async ()=>{
 (async ()=>{
   await readingUpdateDate()
   !lastUpdate ? OrdersDbInit()
-                          : console.log("Last DB update: ", lastUpdate.date)
+                          : console.log("Last DB update: ", lastUpdate.date,"\nDaily DB update is scheduled at 01:00:00 AM " )
   })()
 
 
@@ -60,7 +60,7 @@ const dataBaseUpdate = async ()=>{
   await fetchApiOrders(lastUpdate.date, curentDate)
   }
   
-schedule.scheduleJob('0 12 14 * * *', function(){
+schedule.scheduleJob('0 0 1 * * *', function(){
 
   dataBaseUpdate()
 
